@@ -1,0 +1,79 @@
+services:
+    _defaults:
+        autowire: false
+        autoconfigure: false
+
+    coop_tilleuls_forgot_password.controller.forgot_password:
+        class: CoopTilleuls\ForgotPasswordBundle\Controller\ForgotPasswordController
+        public: true
+        arguments:
+            - '@coop_tilleuls_forgot_password.controller.get_token'
+            - '@coop_tilleuls_forgot_password.controller.update_password'
+            - '@coop_tilleuls_forgot_password.controller.reset_password'
+
+    coop_tilleuls_forgot_password.controller.reset_password:
+        class: CoopTilleuls\ForgotPasswordBundle\Controller\ResetPassword
+        public: true
+        arguments:
+            - '@coop_tilleuls_forgot_password.manager.forgot_password'
+
+    coop_tilleuls_forgot_password.controller.get_token:
+        class: CoopTilleuls\ForgotPasswordBundle\Controller\GetToken
+        public: true
+        arguments:
+            - '@coop_tilleuls_forgot_password.normalizer'
+
+    coop_tilleuls_forgot_password.controller.update_password:
+        class: CoopTilleuls\ForgotPasswordBundle\Controller\UpdatePassword
+        public: true
+        arguments:
+            - '@coop_tilleuls_forgot_password.manager.forgot_password'
+
+    coop_tilleuls_forgot_password.manager.forgot_password:
+        class: CoopTilleuls\ForgotPasswordBundle\Manager\ForgotPasswordManager
+        public: true
+        arguments:
+            - '@coop_tilleuls_forgot_password.manager.password_token'
+            - '@event_dispatcher'
+
+    coop_tilleuls_forgot_password.manager.password_token:
+        class: CoopTilleuls\ForgotPasswordBundle\Manager\PasswordTokenManager
+        public: true
+        arguments:
+            - ~ # Placeholder for token_generator
+
+    coop_tilleuls_forgot_password.manager.doctrine:
+        class: CoopTilleuls\ForgotPasswordBundle\Manager\Bridge\DoctrineManager
+        public: false
+        arguments:
+            - '@?doctrine' # Equivalent to on-invalid="null"
+
+    coop_tilleuls_forgot_password.token_generator.bin2hex:
+        class: CoopTilleuls\ForgotPasswordBundle\TokenGenerator\Bridge\Bin2HexTokenGenerator
+        public: false
+
+    coop_tilleuls_forgot_password.event_listener.request:
+        class: CoopTilleuls\ForgotPasswordBundle\EventListener\RequestEventListener
+        arguments:
+            - '@coop_tilleuls_forgot_password.manager.password_token'
+            - '@coop_tilleuls_forgot_password.provider_chain'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: decodeRequest }
+            - { name: kernel.event_listener, event: kernel.request, method: getTokenFromRequest }
+
+    coop_tilleuls_forgot_password.event_listener.exception:
+        class: CoopTilleuls\ForgotPasswordBundle\EventListener\ExceptionEventListener
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }
+
+    coop_tilleuls_forgot_password.route_loader:
+        class: CoopTilleuls\ForgotPasswordBundle\Routing\RouteLoader
+        public: false
+        tags:
+            - { name: routing.loader }
+
+    coop_tilleuls_forgot_password.provider_chain:
+        class: CoopTilleuls\ForgotPasswordBundle\Provider\ProviderChain
+        public: false
+        arguments:
+            - !tagged_iterator { tag: 'coop_tilleuls_forgot_password.provider', index_by: 'key' }

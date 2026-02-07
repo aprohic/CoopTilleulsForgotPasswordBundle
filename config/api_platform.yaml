@@ -1,0 +1,18 @@
+services:
+    coop_tilleuls_forgot_password.normalizer.documentation:
+        class: CoopTilleuls\ForgotPasswordBundle\Bridge\ApiPlatform\Serializer\DocumentationNormalizer
+        public: true
+        decorates: api_platform.swagger.normalizer.documentation
+        arguments:
+            - '@coop_tilleuls_forgot_password.normalizer.documentation.inner'
+            - '@router'
+            - '@coop_tilleuls_forgot_password.provider_chain'
+
+    coop_tilleuls_forgot_password.openapi.factory:
+        class: CoopTilleuls\ForgotPasswordBundle\Bridge\ApiPlatform\OpenApi\OpenApiFactory
+        public: false
+        decorates: api_platform.openapi.factory
+        arguments:
+            - '@coop_tilleuls_forgot_password.openapi.factory.inner'
+            - '@router'
+            - '@coop_tilleuls_forgot_password.provider_chain'

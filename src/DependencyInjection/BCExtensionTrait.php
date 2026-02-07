@@ -20,7 +20,7 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
@@ -39,12 +39,12 @@ trait BCExtensionTrait
 
         $this->buildProvider($config, $container);
 
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
-        $loader->load('services.xml');
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
+        $loader->load('services.yaml');
 
         // Load API-Platform bridge
         if (isset($container->getParameter('kernel.bundles')['ApiPlatformBundle'])) {
-            $loader->load('api_platform.xml');
+            $loader->load('api_platform.yaml');
         }
 
         $alias = $container->setAlias('coop_tilleuls_forgot_password.manager', $defaultProvider['manager']);
